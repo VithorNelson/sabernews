@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.13.3
+  translator: ^0.1.7
+  url_launcher: ^6.1.7
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -87,4 +91,4 @@ flutter:
   #         weight: 700
   #
   # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  # see https
