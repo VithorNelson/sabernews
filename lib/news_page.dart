@@ -79,17 +79,26 @@ class NewsPageState extends State<NewsPage> {
     }
   }
 
-
-
   Future<void> openArticle(String url) async {
     final Uri uri = Uri.parse(url);
 
+    // Verifica o URL antes de tentar abrir
+    print("Tentando abrir URL: $url");
 
-    if (await canLaunchUrl(uri)) {
+    // Se o link não começar com http ou https, adicione o prefixo
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      print('Adicionando prefixo http:// ao link.');
+      url = 'http://$url'; // Tenta adicionar o prefixo se faltar
+    }
 
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final Uri fixedUri = Uri.parse(url);
+
+    // Imprime o URL corrigido para depuração
+    print("URL corrigido: $url");
+
+    if (await canLaunchUrl(fixedUri)) {
+      await launchUrl(fixedUri, mode: LaunchMode.externalApplication);
     } else {
-
       print('Não foi possível abrir o link: $url');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao abrir o artigo.')),
