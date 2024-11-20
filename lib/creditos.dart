@@ -9,7 +9,7 @@ class CreditsPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black, Colors.blueGrey.shade900], // Fundo em gradiente
+            colors: [Colors.black, Colors.blueGrey.shade900],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -17,71 +17,126 @@ class CreditsPage extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Título
-                const Text(
-                  'Créditos',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange, // Destaque semelhante à tela inicial
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-                // Nome do app
-                const Text(
-                  'Aplicativo de Notícias',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                // Texto introdutório
-                const Text(
-                  'Desenvolvido por:',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Lista de desenvolvedores
-                const Text(
-                  '- Vithor Nelson\n- Pedro Henrique Araujo\n- Felipe Sequeira\n- Gabriel Toschi',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white60,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                // Botão estilizado
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    backgroundColor: Colors.orange, // Cor laranja para combinar com o tema
-                    foregroundColor: Colors.black, // Contraste do texto
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+
+                  const Text(
+                    'Créditos',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      color: Colors.orange,
                     ),
-                    elevation: 5,
+                    textAlign: TextAlign.center,
                   ),
-                  onPressed: () {
-                    Navigator.pop(context); // Retorna à página anterior
-                  },
-                  child: const Text(
-                    'Voltar',
-                    style: TextStyle(fontSize: 16),
+                  const SizedBox(height: 30),
+
+
+                  const Divider(
+                    color: Colors.white24,
+                    thickness: 1,
+                    indent: 50,
+                    endIndent: 50,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Saber News',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(
+                    color: Colors.white24,
+                    thickness: 1,
+                    indent: 50,
+                    endIndent: 50,
+                  ),
+
+
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Desenvolvido por:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+
+                  const Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(Icons.person, color: Colors.orange),
+                        title: Text(
+                          'Vithor Nelson',
+                          style: TextStyle(color: Colors.white60, fontSize: 18),
+                        ),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.person, color: Colors.orange),
+                        title: Text(
+                          'Pedro Henrique Araujo',
+                          style: TextStyle(color: Colors.white60, fontSize: 18),
+                        ),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.person, color: Colors.orange),
+                        title: Text(
+                          'Felipe Sequeira',
+                          style: TextStyle(color: Colors.white60, fontSize: 18),
+                        ),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.person, color: Colors.orange),
+                        title: Text(
+                          'Gabriel Toschi',
+                          style: TextStyle(color: Colors.white60, fontSize: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 40),
+
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      shadowColor: Colors.orangeAccent,
+                      elevation: 8,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Voltar',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
