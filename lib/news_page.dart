@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
-import 'creditos.dart'; // Importe a página de créditos
+import 'article_webview.dart';
+import 'creditos.dart';
 
 class NewsPage extends StatefulWidget {
   const NewsPage({super.key});
@@ -44,81 +44,41 @@ class NewsPageState extends State<NewsPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        if (data['articles'] != null && data['articles'].isNotEmpty) {
-          setState(() {
-            articles = data['articles'];
+        setState(() {
+          articles = (data['articles'] ?? []).where((article) {
+            return article['title'] != null && article['url'] != null;
+          }).toList();
 
-            // Ordenar as notícias por data (mais recente primeiro)
-            articles.sort((a, b) {
-              final dateA =
-                  DateTime.tryParse(a['publishedAt'] ?? '') ?? DateTime(0);
-              final dateB =
-                  DateTime.tryParse(b['publishedAt'] ?? '') ?? DateTime(0);
-              return dateB.compareTo(dateA);
-            });
+          // Ordena as notícias por data de publicação (mais recente primeiro)
+          articles.sort((a, b) {
+            final dateA = DateTime.tryParse(a['publishedAt'] ?? '') ?? DateTime(0);
+            final dateB = DateTime.tryParse(b['publishedAt'] ?? '') ?? DateTime(0);
+            return dateB.compareTo(dateA); // Ordenando de forma decrescente
+          });
 
-            isLoading = false;
-          });
-        } else {
-          print('Nenhuma notícia encontrada!');
-          setState(() {
-            isLoading = false;
-          });
-        }
+          isLoading = false;
+        });
       } else {
-        print('Erro na API: ${response.statusCode}');
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print('Erro ao fazer requisição: $e');
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  Future<void> openArticle(String url) async {
-    final Uri uri = Uri.parse(url);
-
-    // Verifica o URL antes de tentar abrir
-    print("Tentando abrir URL: $url");
-
-    // Se o link não começar com http ou https, adicione o prefixo
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      print('Adicionando prefixo http:// ao link.');
-      url = 'http://$url'; // Tenta adicionar o prefixo se faltar
-    }
-
-    final Uri fixedUri = Uri.parse(url);
-
-    // Imprime o URL corrigido para depuração
-    print("URL corrigido: $url");
-
-    if (await canLaunchUrl(fixedUri)) {
-      await launchUrl(fixedUri, mode: LaunchMode.externalApplication);
-    } else {
-      print('Não foi possível abrir o link: $url');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao abrir o artigo.')),
-      );
-    }
+  void openArticle(String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ArticleWebView(url: url),
+      ),
+    );
   }
 
-
-  String getArticleSummary(Map article) {
-    // Verifica se existe uma descrição disponível
-    if (article['description'] != null && article['description'].isNotEmpty) {
-      return article['description'];
-    }
-
-    // Caso não haja descrição, usa os primeiros 100 caracteres do título como resumo
-    final title = article['title'] ?? 'Sem título';
-    return title.length > 100 ? '${title.substring(0, 100)}...' : title;
-  }
-
-  // Função para navegar até a página de créditos
   void openCreditsPage(BuildContext context) {
     Navigator.push(
       context,
@@ -131,94 +91,127 @@ class NewsPageState extends State<NewsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Notícias'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Notícias',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info),
-            onPressed: () => openCreditsPage(context), // Navegar para a página de créditos
+            icon: const Icon(Icons.info, color: Colors.white),
+            onPressed: () => openCreditsPage(context),
             tooltip: 'Créditos',
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-        onRefresh: fetchNews, // Atualização manual ao puxar para baixo
-        child: articles.isEmpty
-            ? const Center(child: Text('Nenhuma notícia encontrada'))
-            : ListView.builder(
-          itemCount: articles.length,
-          itemBuilder: (context, index) {
-            final article = articles[index];
-            final summary = getArticleSummary(article);
-            return Card(
-              margin: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (article['urlToImage'] != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Image.network(
-                        article['urlToImage'],
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.black, Colors.blueGrey.shade900],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+            : RefreshIndicator(
+          onRefresh: fetchNews,
+          child: Column(
+            children: [
+              const SizedBox(height: 80), // Espaço para o título e AppBar
+              articles.isEmpty
+                  ? const Center(
+                child: Text(
+                  'Nenhuma notícia encontrada.',
+                  style: TextStyle(color: Colors.white70, fontSize: 18),
+                ),
+              )
+                  : Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: articles.length,
+                  itemBuilder: (context, index) {
+                    final article = articles[index];
+                    return Card(
+                      color: Colors.white.withOpacity(0.1), // Cor com transparência
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          article['title'] ?? 'Sem título',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          summary,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          article['publishedAt'] ??
-                              'Data não disponível',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              final url = article['url'] ?? '';
-                              if (url.isNotEmpty) {
-                                openArticle(url);
-                              } else {
-                                print('URL não disponível');
-                              }
-                            },
-                            icon: const Icon(Icons.open_in_browser),
-                            label: const Text('Abrir Artigo'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      elevation: 5, // Sombra para efeito de profundidade
+                      shadowColor: Colors.black.withOpacity(0.4), // Sombra mais suave
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (article['urlToImage'] != null)
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
+                              child: Image.network(
+                                article['urlToImage'],
+                                height: 200,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  article['title'] ?? 'Sem título',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white, // Texto branco
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  article['description'] ?? 'Descrição não disponível',
+                                  style: const TextStyle(
+                                    color: Colors.white70, // Cor do texto mais suave
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () => openArticle(
+                                        article['url'] ?? ''),
+                                    icon: const Icon(Icons.open_in_browser),
+                                    label: const Text('Abrir Artigo'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );
